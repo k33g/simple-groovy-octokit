@@ -1,0 +1,2 @@
+# simple-groovy-octokit
+:octocat:
