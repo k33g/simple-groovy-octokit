@@ -1,6 +1,4 @@
-import http.*
 import octokit.*
-import groovy.json.*
 
 def gitHubCli = new GitHubClient(
     baseUri:"http://github.at.home/api/v3",
