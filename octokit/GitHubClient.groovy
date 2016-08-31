@@ -241,6 +241,22 @@ class GitHubClient {
 
   // === Labels ===
 
+  // {name, color, owner, repository}
+  def createLabel(Map args) {
+    def resp = this.postData(
+      path: "/repos/${args.owner}/${args.repository}/labels",
+      data: [
+        name: args.name,
+        color: args.color
+      ]
+    )
+    if(resp.code==201) {
+      return new JsonSlurper().parseText(resp.text)
+    } else {
+      println JsonOutput.toJson(resp)
+      return null
+    }
+  }
 
 
   // === Milestones ===
