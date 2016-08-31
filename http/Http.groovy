@@ -8,12 +8,12 @@ class Http {
             java.net.HttpURLConnection.HTTP_ACCEPTED == code
   }
 
-  static request (method, uri, data, headers) {
+  static request (method, uri, headers, data) {
     def obj = new java.net.URL(uri)
     def connection = obj.openConnection()
     connection.setRequestMethod(method)
     headers.each {
-      connection.setRequestProperty(it.property(), it.value())
+      connection.setRequestProperty(it.property, it.value)
     }
 
     if(data != null && (method == "POST" || method == "PUT")) {
@@ -47,6 +47,10 @@ class Http {
         text: null
       )
     }
-
   }
+
+  static request (Map args) {
+    return request(args.method, args.uri, args.headers, args.data)
+  }
+
 }
