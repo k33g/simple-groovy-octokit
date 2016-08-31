@@ -1,9 +1,9 @@
 import octokit.*
 
 def gitHubCli = new GitHubClient(
-    baseUri:"http://github.at.home/api/v3",
-    token:System.getenv("TOKEN_GHE_27_K33G")
-  )
+  baseUri:"http://github.at.home/api/v3",
+  token:System.getenv("TOKEN_GHE_27_K33G")
+)
 
 def searchUsers = gitHubCli.searchUsers(handle:"k33")
 
