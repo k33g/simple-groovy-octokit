@@ -49,7 +49,17 @@ class GitHubClient {
   // args.path, args.data
   def putData(Map args) { // return http.Response
     return Http.request(
-      method: "POST",
+      method: "PUT",
+      uri: this.baseUri + args.path,
+      headers: this.headers,
+      data: JsonOutput.toJson(args.data)
+    )
+  }
+
+  // args.path, args.data
+  def patchData(Map args) { // return http.Response
+    return Http.request(
+      method: "PATCH",
       uri: this.baseUri + args.path,
       headers: this.headers,
       data: JsonOutput.toJson(args.data)
@@ -76,8 +86,8 @@ class GitHubClient {
 
   def createRepository(Map args) {
     def resp = this.postData(
-      path:args.path,
-      data:[
+      path: args.path,
+      data: [
         name: args.name,
         description: args.description,
         private: args.private,
@@ -96,7 +106,7 @@ class GitHubClient {
 
   def createPublicRepository(Map args) {
     return this.createRepository(
-      path:"/user/repos",
+      path: "/user/repos",
       name: args.name,
       description: args.description,
       private: false
@@ -105,7 +115,7 @@ class GitHubClient {
 
   def createPrivateRepository(Map args) {
     return this.createRepository(
-      path:"/user/repos",
+      path: "/user/repos",
       name: args.name,
       description: args.description,
       private: true
@@ -114,7 +124,7 @@ class GitHubClient {
 
   def createPublicOrganizationRepository(Map args) {
     return this.createRepository(
-      path:"/orgs/${args.organization}/repos",
+      path: "/orgs/${args.organization}/repos",
       name: args.name,
       description: args.description,
       private: false
@@ -123,12 +133,116 @@ class GitHubClient {
 
   def createPrivateOrganizationRepository(Map args) {
     return this.createRepository(
-      path:"/orgs/${args.organization}/repos",
+      path: "/orgs/${args.organization}/repos",
       name: args.name,
       description: args.description,
       private: true
     )
   }
+
+  // === Organizations ===
+
+  //{login, admin, profile_name}
+  def createOrganization(Map args) {
+    def resp = this.postData(
+      path: "/admin/organizations",
+      data: [
+        login: args.login,
+        admin: args.admin,
+        profile_name: args.profile_name
+      ]
+    )
+    if(resp.code==201) {
+      return new JsonSlurper().parseText(resp.text)
+    } else {
+      println JsonOutput.toJson(resp)
+      return null
+    }
+  }
+
+  // === Teams ===
+
+  // {org, name, description, repo_names, privacy, permission}
+  def createTeam(Map args) {
+    def resp = this.postData(
+      path: "/orgs/${args.org}/teams",
+      data: [
+        name: args.name,
+        description: args.description,
+        repo_names: args.repo_names,
+        privacy: args.privacy, // secret or closed
+        permission: args.permission // pull, push, admin
+      ]
+    )
+    if(resp.code==201) {
+      return new JsonSlurper().parseText(resp.text)
+    } else {
+      println JsonOutput.toJson(resp)
+      return null
+    }
+  }
+
+  // {org}
+  def fetchTeams(Map args) {
+    return new JsonSlurper().parseText(
+      this.getData(path:"/orgs/${args.org}/teams").text
+    )
+  }
+
+  // {org, name}
+  def getTeamByName(Map args) {
+    return this.fetchTeams(org: args.org).find {
+      return it.name = args.name
+    }
+  }
+
+  // {teamId, userName, role}
+  def addTeamMembership(Map args) {
+    def resp = this.putData(
+      path: "/teams/${args.teamId}/memberships/${args.userName}",
+      data: [
+        role: args.role // member, maintener
+      ]
+    )
+    if(resp.code==200) {
+      return new JsonSlurper().parseText(resp.text)
+    } else {
+      println JsonOutput.toJson(resp)
+      return null
+    }
+  }
+
+  // === Impersonation ===
+
+  def getAuthorizationsForImpersonation(Map args) {
+    def resp = this.postData(
+      path: "/admin/users/${args.handle}/authorizations",
+      data: [
+        scopes: ["user"]
+      ]
+    )
+    if(resp.code==201 || resp.code==200) {
+      return new JsonSlurper().parseText(resp.text)
+    } else {
+      println JsonOutput.toJson(resp)
+      return null
+    }
+  }
+
+  // {data}
+  def changeUserData(Map args) {
+    def resp = this.patchData(
+      path: "/user",
+      data: args.data
+    )
+    return new JsonSlurper().parseText(resp.text)
+  }
+
+
+
+
+
+
 
 
 }

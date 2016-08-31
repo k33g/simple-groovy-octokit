@@ -11,12 +11,22 @@ class Http {
   static request (method, uri, headers, data) {
     def obj = new java.net.URL(uri)
     def connection = obj.openConnection()
-    connection.setRequestMethod(method)
+
+    if(method == "PATCH") { // see http://stackoverflow.com/questions/25163131/httpurlconnection-invalid-http-method-patch
+      connection.setRequestProperty("X-HTTP-Method-Override", "PATCH");
+      connection.setRequestMethod("POST");
+    } else {
+      connection.setRequestMethod(method)
+    }
+
+
     headers.each {
       connection.setRequestProperty(it.property, it.value)
     }
 
-    if(data != null && (method == "POST" || method == "PUT")) {
+
+
+    if(data != null && (method == "POST" || method == "PUT" || method == "PATCH")) {
       connection.setDoOutput(true)
       def dataOutputStream = new DataOutputStream(connection.getOutputStream())
       dataOutputStream.writeBytes(data)
