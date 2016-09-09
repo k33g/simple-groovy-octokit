@@ -239,9 +239,46 @@ class GitHubClient {
   }
 
 
+  // === Labels ===
+
+  // {name, color, owner, repository}
+  def createLabel(Map args) {
+    def resp = this.postData(
+      path: "/repos/${args.owner}/${args.repository}/labels",
+      data: [
+        name: args.name,
+        color: args.color
+      ]
+    )
+    if(resp.code==201) {
+      return new JsonSlurper().parseText(resp.text)
+    } else {
+      println JsonOutput.toJson(resp)
+      return null
+    }
+  }
 
 
+  // === Milestones ===
 
+  // {title, state, description, due_on, owner, repository}
+  def createMilestone(Map args) {
+    def resp = this.postData(
+      path: "/repos/${args.owner}/${args.repository}/milestones",
+      data: [
+        title: args.title,
+        state: args.state,
+        description: args.description,
+        due_on: args.due_on
+      ]
+    )
+    if(resp.code==201) {
+      return new JsonSlurper().parseText(resp.text)
+    } else {
+      println JsonOutput.toJson(resp)
+      return null
+    }
+  }
 
 
 
